@@ -1,0 +1,64 @@
+1. Requerimientos funcionales:
+  1. Crear una cuenta: Poder registrarse con la cédula y un correo para tener un usuario propio.
+  2. Hacer solicitudes en línea: Llenar formularios digitales de los trámites más comunes y adjuntar los documentos necesarios (como PDF o fotos).
+  3. Revisar el estado: Tener una "mesa de entrada" virtual donde se vea en qué está cada trámite: si lo recibieron, si está en revisión o si ya está listo.
+  4. Recibir avisos: Que el sistema mande un correo automático cada vez que el estado de tu trámite cambie, para no tener que estar entrando a revisar.
+  5. Panel para funcionarios: Una vista especial para los empleados de la alcaldía donde puedan ver, organizar y gestionar todas las solicitudes que van llegando.
+
+
+2. Requerimientos no funcionales:
+  1. La interfaz de usuario debe ser intuitiva y fácil de usar, permitiendo que ciudadanos con diferentes niveles de alfabetización digital puedan realizar trámites. (Atributo de Calidad: Usabilidad)
+  2. La arquitectura del sistema debe estar diseñada para escalar horizontalmente y soportar un aumento significativo de usuarios y solicitudes durante picos de demanda (ej. primeros días de pago de impuestos) sin degradar el rendimiento. (Atributo de Calidad: Escalabilidad)
+  3. El sistema debe estar operativo y accesible para los ciudadanos al menos el 99% del tiempo en un horario de 24/7. (Atributo de Calidad: Disponibilidad)
+  4. Todos los datos personales y documentos deben estar cifrados tanto en tránsito (usando TLS/SSL) como en reposo. El acceso a las funcionalidades administrativas debe estar protegido por autenticación robusta y control de roles. (Atributo de Calidad: Seguridad)
+  5. El sistema debe poder integrarse con los sistemas legacy existentes en la administración pública (ej. bases de datos de registraduría, sistemas de gestión documental) mediante APIs bien definidas. (Atributo de Calidad: Interoperabilidad)
+
+
+3. Atributos de Calidad Asociados a los RNF
+* Fácil de usar = Usabilidad
+* Aguantar las multitudes = Escalabilidad
+* Siempre disponible = Disponibilidad
+* Ser seguro = Seguridad
+* Llevarse bien con sistemas viejos = Interoperabilidad
+
+
+4. Determine los ASR's de la aplicación. 
+* Escalabilidad (RNF02): La necesidad de manejar picos de demanda alta obliga a elegir una arquitectura que pueda escalar horizontalmente (ej., usando microservicios, balanceadores de carga y bases de datos distribuidas), en lugar de una arquitectura monolítica.
+* Interoperabilidad (RNF05): La integración con sistemas legacy existentes dictamina el uso de patrones de integración (como APIs REST o colas de mensajes) y posiblemente la creación de un adaptador o una capa de anti-corrupción para aislar el nuevo sistema de las peculiaridades de los sistemas antiguos.
+* Seguridad (RNF04): El requisito de proteger datos sensibles y gestionar roles afecta directamente a la arquitectura, requiriendo la implementación de un módulo centralizado de autenticación y autorización (ej., usando OAuth 2.0 / OpenID Connect), y el cifrado de datos en todos los niveles.
+
+
+5. Escenarios:
+ Escenario 1: 
+Pico de demanda en el primer día de impuestos
+Fuente: 5000 usuarios concurrentes.
+Estímulo: Realizar el trámite de declaración de impuestos.
+Artefacto: Sistema completo.
+Entorno: Modo normal de operación, bajo pico de carga extremo.
+Respuesta: El sistema procesa las solicitudes.
+Medida de Respuesta: El tiempo de respuesta promedio se mantiene por debajo de los 3 segundos, y la tasa de error es menor al 0.1%.
+
+Escenario 2: Intento de acceso no autorizado
+Fuente: Un atacante externo.
+Estímulo: Intenta acceder a la base de datos para robar información personal.
+Artefacto: Base de datos del sistema.
+Entorno: Tiempo de operación normal.
+Respuesta: Los datos están cifrados. El sistema detecta el intento de acceso irregular y lo bloquea, generando una alerta para los administradores.
+Medida de Respuesta: Los datos permanecen ilegibles para el atacante. La alerta se genera en menos de 2 minutos.
+
+Escenario 3: Integración con sistema legacy
+Fuente: Sistema de gestión documental de la alcaldía.
+Estímulo: La plataforma ciudadana envía una solicitud para almacenar un documento escaneado.
+Artefacto: Módulo de interoperabilidad (API).
+Entorno: Durante el horario laboral.
+Respuesta: El sistema transforma la petición al formato esperado por el sistema legacy y confirma el almacenamiento exitoso.
+Medida de Respuesta: La transacción se completa con éxito en el 99.5% de los casos, con un latency máximo de 500ms.
+  
+6. Árbol de priorización de atributos de calidad
+           Atributos de Calidad de la Plataforma
+                           │
+        ┌──────────────────┼──────────────────┐
+        │                  │                  │
+    Seguridad        Escalabilidad     Interoperabilidad
+          │                │                  │
+ (Datos protegidos) (Aguanta multitudes)  (Se conecta con sistemas viejos)
